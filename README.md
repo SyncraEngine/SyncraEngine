@@ -46,7 +46,7 @@ SyncraEngine is following a waterfall-style development model early on and will 
 
 Lastly, this project is a recent idea of mine. It's only been around for a month and a half, but progress has been consistent and productive.
 
-As the project is still in alpha, releases will be made available through Discord only. Once the core feature set is implemented, beta testing will occur on Steam.
+As the project is still in pre-alpha, releases will be made available through Discord only. Once the core feature set is implemented, beta testing will occur on Steam.
 
 ## How can I help?
 
