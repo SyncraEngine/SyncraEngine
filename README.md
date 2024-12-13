@@ -4,6 +4,8 @@ A social VR platform and engine focused on collaborative content creation.
 
 Check out the [SyncraEngine Discord server](https://discord.gg/yxMagwQx9A) to learn more.
 
+This public repository hosts Issues, Projects, and GitHub Pages for SyncraEngine.
+
 ## What's this project about?
 
 The goal here is to provide a 3D sandbox/engine optimized for social VR use cases that lets you do just about anything in a safe, performant, and flexible way. A lot of sandbox games either don't support VR, have limited editing/scripting tools, don't handle user-generated content safely/performantly, and are generally just poorly implemented. SyncraEngine's architecture and feature set is focused on modularity, extensibility, safety, performance, and simplicity. The main objectives here are the following:
