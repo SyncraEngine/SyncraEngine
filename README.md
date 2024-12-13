@@ -43,4 +43,6 @@ Lastly, this project is a recent idea of mine. It's only been around for a month
 
 SyncraEngine is still in its early stages, and your feedback or ideas are welcome! Join the [Discord server](https://discord.gg/yxMagwQx9A) to share suggestions, ask questions, or learn more about the project.
 
-You're free to make pull requests or issues, but do keep in mind that a lot of development efforts happen behind-the-scenes and on-paper in the Discord server. It's recommended to ask questions there first before making any large PRs.
+## Where is the source code?
+
+The project has been moved over to a private repo, but source code may be provided upon request.
