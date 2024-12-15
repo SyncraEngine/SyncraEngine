@@ -50,7 +50,7 @@ As the project is still in pre-alpha, releases will be made available through Di
 
 ## How can I help?
 
-SyncraEngine is still in pre-alpha, and your feedback or ideas are welcome! Join the [Discord server](https://discord.gg/yxMagwQx9A) to share suggestions, ask questions, or learn more about the project.
+SyncraEngine is early in its development, and your feedback or ideas are welcome! Join the [Discord server](https://discord.gg/yxMagwQx9A) to share suggestions, ask questions, or learn more about the project.
 
 ## Where is the source code?
 
