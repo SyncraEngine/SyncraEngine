@@ -21,6 +21,7 @@ The goal here is to provide a 3D sandbox/engine optimized for social VR use case
   - Official and user package management
   - Version control for scripts and content
   - Content discovery
+  - Hot reloading with runtime dependency resolution
 - **Performance**:
   - Aggressive multithreading
   - Pipelined/asynchronous rendering
