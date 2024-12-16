@@ -8,13 +8,14 @@ This public repository hosts Issues, Projects, and GitHub Pages for SyncraEngine
 
 ## What's this project about?
 
-The goal here is to provide a 3D sandbox/engine optimized for social VR use cases that lets you do just about anything in a safe, performant, and flexible way. A lot of sandbox games either don't support VR, have limited editing/scripting tools, don't handle user-generated content safely/performantly, and are generally just poorly implemented. SyncraEngine's architecture and feature set is focused on modularity, extensibility, safety, performance, and simplicity. The main objectives here are the following:
+The goal here is to provide a 3D sandbox/engine optimized for social VR use cases that lets you do just about anything in a safe, performant, and flexible way. A lot of sandbox games don't support VR, have limited editing/scripting tools or capabilities, don't handle user-generated content safely/performantly, or are generally just poorly implemented. SyncraEngine's architecture and feature set is focused on extensibility, safety, fidelity, and performance. The main objectives here are the following:
 
-- **Safety and Modularity**:
+- **Security & Reliability**:
   - Full process/world/script sandboxing
   - Engine-level permissions system
   - Memory-safe code written in Rust
   - Shader and script validation
+  - Process-based architecture
 - **Extensibility**:
   - Scriptable components, drivers, libraries, shaders, and more
   - Official and user package management
@@ -24,10 +25,14 @@ The goal here is to provide a 3D sandbox/engine optimized for social VR use case
   - Aggressive multithreading
   - Pipelined/asynchronous rendering
   - Native-level performance without garbage collection
-- **Rendering**:
+  - Data-oriented ECS architecture
+  - Efficient automatic network synchronization
+- **Fidelity**:
   - User-defined shaders
   - Scriptable render graph and post-processing
   - Path tracing with lightmapping and hybrid rendering options
+  - HRTF and audio spatialization
+  - Physics, IK, and DSP
 
 And a bunch of other stuff that couldn't possibly be fully enumerated here.
 
