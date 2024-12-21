@@ -8,7 +8,7 @@ This public repository hosts Issues, Projects, and GitHub Pages for SyncraEngine
 
 ## What's this project about?
 
-The goal here is to provide a 3D sandbox/engine optimized for social VR use cases that lets you do just about anything in a safe, performant, and flexible way. A lot of sandbox games don't support VR, have limited editing/scripting tools or capabilities, don't handle user-generated content safely/performantly, or are generally just poorly implemented. SyncraEngine's architecture and feature set is focused on extensibility, safety, fidelity, and performance. The main objectives here are the following:
+The goal here is to provide a social VR platform built around a modular, extensible engine that lets you do just about anything in a safe, performant, and flexible way. A lot of sandbox games don't support VR, have limited editing/scripting tools or capabilities, don't handle user-generated content safely/performantly, or are generally just poorly implemented. SyncraEngine's architecture and feature set is focused on extensibility, safety, fidelity, and performance. The main objectives here are the following:
 
 - **Security & Reliability**:
   - Full process/world/script sandboxing
