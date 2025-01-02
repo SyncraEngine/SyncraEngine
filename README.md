@@ -50,7 +50,7 @@ Here's the very high level timeline/roadmap for SyncraEngine:
 
 SyncraEngine followed a waterfall-style development model early on and has transitioned to a more agile methodology recently. The architecting, engineering, and implementation stages have been finished in about 8 weeks total, and the project is in the testing stage now as of January 1. A good time estimate for this next stage is 2-4 weeks. If you want to follow along with development efforts, joining the [Discord server](https://discord.gg/yxMagwQx9A) is highly recommended.
 
-Lastly, this project is a recent idea of mine. It's only been around for a month and a half, but progress has been consistent and productive.
+Lastly, this project is a recent idea of mine. It's only been around for roughly 2 months, but progress has been consistent and productive.
 
 As the project is still in alpha, releases/benchmarks/examples will be made available through Discord only. Once the core feature set is implemented, beta testing will occur on Steam.
 
