@@ -8,7 +8,7 @@ This public repository hosts Issues, Projects, and GitHub Pages for SyncraEngine
 
 ## What's this project about?
 
-The goal here is to provide a social VR platform built around a modular, extensible engine that lets you do just about anything in a safe, performant, and flexible way. A lot of sandbox games don't support VR, have limited editing/scripting tools or capabilities, don't handle user-generated content safely/performantly, or are generally just poorly implemented. SyncraEngine's architecture and feature set is focused on extensibility, safety, fidelity, and performance. The main objectives here are the following:
+The goal here is to provide a social VR platform built around a modular, extensible engine that lets you do just about anything in a safe, performant, and flexible way. A lot of sandbox games don't support VR, have limited editing/scripting tools or capabilities, don't handle user-generated content safely/performantly, or have lackluster visuals/lighting. SyncraEngine's architecture and feature set is focused on extensibility, safety, fidelity, and performance. The main objectives here are the following:
 
 - **Security & Reliability**:
   - Full process/world/script sandboxing
@@ -48,11 +48,11 @@ Here's the very high level timeline/roadmap for SyncraEngine:
 5. **Deployment**: Publish a battle-tested, feature-rich release on Steam.
 6. **Maintenance**: Fix bugs, add new features where appropriate, and provide continued support.
 
-SyncraEngine is following a waterfall-style development model early on and will transition to a more agile methodology later. The requirements and design stages have been finished in about 6 weeks total, and the project is in the implementation stage now as of December 12. A good time estimate for this next stage is 4-8 weeks. If you want to follow along with development efforts, joining the [Discord server](https://discord.gg/yxMagwQx9A) is highly recommended.
+SyncraEngine followed a waterfall-style development model early on and has transitioned to a more agile methodology recently. The architecting, engineering, and implementation stages have been finished in about 8 weeks total, and the project is in the testing stage now as of January 1. A good time estimate for this next stage is 2-4 weeks. If you want to follow along with development efforts, joining the [Discord server](https://discord.gg/yxMagwQx9A) is highly recommended.
 
 Lastly, this project is a recent idea of mine. It's only been around for a month and a half, but progress has been consistent and productive.
 
-As the project is still in pre-alpha, releases will be made available through Discord only. Once the core feature set is implemented, beta testing will occur on Steam.
+As the project is still in alpha, releases/benchmarks/examples will be made available through Discord only. Once the core feature set is implemented, beta testing will occur on Steam.
 
 ## How can I help?
 
