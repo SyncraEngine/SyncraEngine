@@ -2,60 +2,60 @@
 The Engine & ECS: The Heart of Worlds
 ======================================
 
-SyncraEngine uses a data-oriented **Entity-Component-System (ECS)** to manage
-the state and logic for each “world.” A world runs as its own process, orchestrated
-by :doc:`runtime`, and it connects to drivers and scripts via a concurrency-friendly
-design. Below, we’ll explore how entities, components, and systems interact, and
-how concurrency, permissions, and networking come into play.
+SyncraEngine employs a data-oriented **Entity-Component-System (ECS)** to manage
+the state and logic for each “world.” Each world runs in its own process,
+coordinated by :doc:`runtime`, and communicates with drivers and scripts through
+a concurrency-friendly design. This document explains how entities, components,
+and systems work together, and how concurrency, permissions, and networking fit
+into the bigger picture.
 
 Why ECS?
 --------
 
 1. **Data-Oriented Performance**
-   ECS separates data into discrete arrays (components) for fast iteration
-   on modern CPUs. This typically yields better cache behavior than
-   object-oriented approaches.
+   By separating data into discrete arrays (components), modern CPUs can
+   iterate quickly over memory. This approach often yields superior cache
+   behavior compared to object-oriented designs.
 
 2. **Parallel Execution**
-   Because systems declare which components they read or write, the engine’s
-   scheduler can automatically parallelize them where safe—no more manual
-   thread coding.
+   Systems declare which components they read or write, enabling the engine’s
+   scheduler to run them in parallel when no data conflicts exist—eliminating
+   the need for intricate manual threading.
 
 3. **Modular Logic**
-   Each system handles a particular concern (e.g., physics, AI, network
-   sync). Components are plain data, so adding or removing features doesn’t
-   require big rewrites of monolithic objects.
+   Each system addresses a single concern (e.g., physics, AI, network
+   synchronization). Because components only store data, adding or removing
+   features does not require large-scale changes to monolithic objects.
 
 4. **Flexibility for VR & Beyond**
-   By decoupling data (components) from logic (systems), the engine can adapt
-   easily to VR inputs, advanced rendering pipelines, or other specialized tasks.
+   Decoupling data (components) from logic (systems) allows easy adaptation to
+   VR inputs, advanced rendering pipelines, or other specialized use cases.
 
 ECS Fundamentals
 ----------------
 
-**Entities**
-These are just unique IDs (or handles) representing “things” in a world—
-anything from a player avatar to a light source or UI panel.
+- **Entities**
+  Unique IDs or handles representing “things” in a world—anything from a
+  player avatar to a light source or UI panel.
 
-**Components**
-Plain data structures (e.g., `Transform`, `RigidBody`, `NetworkIdentity`).
-An entity can have multiple components attached, but only one instance
-of each component type (no duplication within the same entity).
+- **Components**
+  Plain data structures (e.g., `Transform`, `RigidBody`, `NetworkIdentity`).
+  An entity can hold multiple components but only one instance of each
+  component type.
 
-**Systems**
-Functions or modules that run every “frame” (or at a fixed timestep). A system
-declares which components it reads (`R`) and writes (`W`). The scheduler
-analyzes these “read/write sets” to find safe parallel executions.
+- **Systems**
+  Functions or modules that run each frame (or at a fixed timestep). A system
+  declares which components it reads (`R`) and writes (`W`), and the scheduler
+  uses these read/write sets to ensure safe parallel execution.
 
 A Minimal Example
 -----------------
 
-Here’s a tiny example of how you might define components and a system in a
-Rust-like pseudocode (just for illustration):
+A simplified Rust-like example illustrating components and a system:
 
 .. code-block:: rust
 
-    // A couple of components
+    // Components
     struct Transform {
         position: Vec3,
         rotation: Quat,
@@ -66,139 +66,131 @@ Rust-like pseudocode (just for illustration):
         angular: Vec3,
     }
 
-    // A system that updates transforms based on velocity
+    // System that updates transforms based on velocity
     fn system_update_transform(
-        transforms: &mut [Transform],  // W: We modify transforms
-        velocities: &[Velocity],       // R: We only read velocities
+        transforms: &mut [Transform],  // W: modifies Transform
+        velocities: &[Velocity],       // R: reads Velocity
         delta_time: f32,
     ) {
-        // For each entity that has both Transform and Velocity
-        // (the ECS picks matching arrays by index or ID)
         for (transform, vel) in transforms.iter_mut().zip(velocities.iter()) {
             transform.position += vel.linear * delta_time;
-            // rotation update omitted for brevity
+            // Rotation update omitted for brevity
         }
     }
 
-The ECS ensures this system only runs in parallel with systems that do not
-write `Transform` or `Velocity` (to avoid data races).
+The ECS ensures this system does not run in parallel with any system that writes
+to `Transform` or `Velocity`, preventing data races.
 
 Concurrency & Scheduling
 ------------------------
 
-SyncraEngine’s engine process automatically compiles a **system graph** each
-frame or tick:
+During each frame or tick, the engine process:
 
-1. **Collect** all systems from user scripts or built-in packages.
-2. **Analyze** each system’s read/write sets to see which systems can run
-   in parallel. (e.g., a “PhysicsSystem” that writes `RigidBody` can’t run
-   at the same time as “CollisionSystem” if that also writes `RigidBody`.)
-3. **Order** them topologically based on declared dependencies. If a system
-   says “I must run after `InputSystem`,” the scheduler ensures the correct
-   sequence.
+1. **Collects** all systems from user scripts or built-in packages.
+2. **Analyzes** each system’s read/write sets to identify safe parallel
+   execution (e.g., “PhysicsSystem” writing `RigidBody` cannot run simultaneously
+   with “CollisionSystem” if it also writes `RigidBody`).
+3. **Orders** them topologically based on declared dependencies (e.g., if a
+   system must run after `InputSystem`, the scheduler respects that requirement).
 
-Because each system is essentially a “pure function” from the ECS’s perspective
-(reads components, maybe writes some, outputs changes), concurrency becomes
-straightforward to manage.
+Because each system acts like a “pure function” in terms of the ECS (reads/writes
+specific data, produces updates), concurrency becomes simpler to manage.
 
 Permissions & Security
 ----------------------
 
-Beyond concurrency, each system can declare:
+Beyond concurrency, systems can specify:
 
-- **Engine-Level Permissions**: “My system can read `Transform` and `RigidBody`,
-  but can’t read or write private `NetworkIdentity` data unless it has the
-  right permission.” This prevents untrusted scripts from messing with
-  critical netcode or VR driver data.
+- **Engine-Level Permissions**
+  A system can declare, for example, that it reads `Transform` but cannot
+  read or write critical `NetworkIdentity` data unless granted the proper
+  permission. This helps safeguard essential networking or VR driver data.
 
-- **Driver Access**: Some systems might subscribe to data from a driver
-  (e.g., VR input or audio FFT) through a dataflow channel. The ECS ensures
-  a system only sees the channels it’s allowed to read.
+- **Driver Access**
+  Some systems subscribe to driver data (e.g., VR inputs or audio FFT) via
+  dataflow channels. The ECS ensures a system only accesses channels it is
+  authorized to read.
 
-In short, it’s not just concurrency safety but also a form of sandboxing.
-Systems can’t read or write data they haven’t declared or been granted
-permission for—this is enforced by the engine at runtime.
+By enforcing permissions in tandem with concurrency checks, SyncraEngine
+prevents unauthorized scripts from modifying or viewing data they are not
+supposed to.
 
 Scripting & ECS
 ---------------
 
-**User Scripts** can define new systems, component types, or even events
-(“OnCollision”, “OnNetworkUpdate”). The process typically looks like:
+**User Scripts** can define new systems, component types, or event hooks
+(“OnCollision,” “OnNetworkUpdate,” etc.). Generally:
 
-1. **Declare** a new component type in your script IL.
-2. **Write** a system function referencing that component’s read/write set.
-3. **Compile** and load the script. The engine merges your system into its
-   scheduling graph, runs it each frame.
+1. **Declare** a component type in script IL.
+2. **Write** a system function specifying which components it reads/writes.
+3. **Compile & Load** the script. The engine integrates the new system into
+   the scheduling graph, running it every frame.
 
-If you need more detail on how scripts compile or how they reference ECS
-structures, see :doc:`scripting`.
+For details on compilation and ECS references in scripts, see :doc:`scripting`.
 
 Networking & Worlds
 -------------------
 
-Each **engine instance** (i.e., each world) can optionally be networked. For
-multiplayer or multi-user VR:
+Each **engine instance** (or “world”) may be networked for multiplayer or
+multi-user VR:
 
-- **Server/Host**: The engine instance that claims authority for certain
-  components (e.g., `Transform` for the “host player” entity).
-- **Clients**: Mirror or replicate these components from the server.
-  Concurrency rules still apply locally—systems run in parallel, but
-  some data might come from the network driver’s input channels.
+- **Server/Host**: Takes authority over certain components (e.g., `Transform`
+  for the host’s avatar).
+- **Clients**: Replicate those components from the server. Concurrency rules
+  still apply locally—systems run in parallel, but some data arrives from the
+  network driver’s input channels.
 
-By mixing ECS concurrency with netcode, you can replicate or sync only
-the components you want. A purely local single-player world might skip
-the netcode system altogether.
+A purely local world can skip netcode systems entirely, while a multiplayer
+world merges ECS concurrency with network synchronization logic.
 
 Driver Interaction
 ------------------
 
-As explained in :doc:`drivers`, each driver is effectively an external
-subprocess that might feed data to or receive data from the ECS. Common examples:
+As described in :doc:`drivers`, each driver is an external subprocess that can
+provide data to or receive data from the ECS. Common examples include:
 
-- **Renderer**: Subscribes to “Renderable” or “Camera” components. The
-  ECS might publish updated transforms or materials each frame, which
-  the renderer uses to draw.
-- **Audio**: Possibly reads `AudioSource` components from the ECS and
-  applies DSP (like FFT). Or it might push real-time amplitude levels
-  back into the ECS for visual effects.
-- **Input/VR**: Writes input states or VR tracking data into ECS components
-  each frame, letting user systems respond to changes in head position
-  or controller triggers.
+- **Renderer**
+  Subscribes to `Renderable` or `Camera` components. The ECS publishes updated
+  transforms or materials, which the renderer reads and draws.
+
+- **Audio**
+  May read `AudioSource` components and apply DSP (e.g., FFT) or send amplitude
+  values back to the ECS for real-time visual reactions.
+
+- **Input/VR**
+  Updates ECS components with new headset or controller data. Systems can then
+  respond to changes in pose or trigger states.
 
 Lifecycle
 ---------
 
-Typically, an ECS instance does something like this each update:
+Each ECS instance typically follows these steps each update:
 
-1. **Gather** external data from drivers or scripts (e.g., new input events).
+1. **Gather** data from drivers or scripts (e.g., input events).
 2. **Run** the concurrency scheduler:
    - Sort systems by dependencies.
-   - Execute them in parallel where no read/write conflicts exist.
-3. **Apply** any structural changes (e.g., new entities or components that
-   were queued up during system execution).
-4. **Publish** updates to drivers or network if needed (e.g., transforms changed,
-   so tell the renderer or replicate to other clients).
-5. **End-of-frame** housekeeping, ready for the next tick.
+   - Execute them in parallel when read/write conflicts do not exist.
+3. **Apply** structural changes (e.g., new entities/components) queued by
+   systems during the update.
+4. **Publish** changes to drivers or the network if required (e.g., changed
+   transforms for rendering).
+5. **End-of-frame** cleanup, preparing for the next tick.
 
-Because the engine runs in its own process, if it crashes for any reason
-(e.g., a script bug), :doc:`runtime` can isolate the crash logs and reboot
-the engine if appropriate.
+Because the engine runs in its own process, a crash caused by a script or
+system does not affect other processes. :doc:`runtime` can isolate crash logs
+and reboot the engine process if necessary.
 
 Summary
 -------
 
-SyncraEngine’s ECS-based approach is the core of each world. It yields:
+SyncraEngine’s ECS-based design anchors each world’s logic and data, offering:
 
-- **Parallel & Safe** systems that handle logic without stepping on each
-  other’s toes.
-- **Modular** code, letting you add features via components and systems,
-  or hooking them into script packages.
-- **Clear Boundaries** for security and concurrency, ensuring the driver
-  processes or user scripts can’t overwrite or read memory they’re not
-  supposed to.
+- **Parallel, Safe** system execution without data conflicts
+- **Modular** expansion via new components and systems, or script packages
+- **Secure Boundaries** that guard data from drivers or scripts lacking
+  proper permissions
 
-To learn more about how user-defined scripts shape or add new ECS systems,
-check out :doc:`scripting`. If you’re curious about how data streams from
-drivers feed in, see :doc:`dataflow`. Otherwise, you now have the big picture
-of how the engine orchestrates the heart of the simulation in SyncraEngine!
-
+See :doc:`scripting` for details on how user-defined scripts shape or add new
+ECS systems. To learn how driver data flows into or out of the ECS, visit
+:doc:`dataflow`. This overview covers the core of how SyncraEngine orchestrates
+world simulations via an ECS.

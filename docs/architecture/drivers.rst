@@ -2,182 +2,183 @@
 Drivers: Specialized Subprocesses
 =================================
 
-In SyncraEngine, *drivers* are standalone subprocesses responsible for specific
-system-level tasks—like rendering, audio output, window management, VR handling,
-and more. By isolating each driver in its own process, we gain strong **modularity**,
-**crash isolation**, and the ability to swap or extend functionalities without
-rewriting the entire engine core.
+In SyncraEngine, *drivers* are standalone subprocesses dedicated to specific
+system-level tasks such as rendering, audio, window management, or VR handling.
+Running each driver in its own process brings strong **modularity**, **crash
+isolation**, and the freedom to swap or extend functionality without modifying
+the core engine.
 
 Why Drivers?
 ------------
 
 1. **Crash Isolation**
-   If a driver (e.g., the audio subsystem) crashes or experiences a fatal
-   error, SyncraRuntime can automatically restart just that driver process,
-   leaving the rest of the system (and other drivers/worlds) unaffected.
+   If a driver (e.g., audio) crashes or encounters a fatal error, SyncraRuntime
+   can restart that driver independently. Other drivers and engine instances
+   continue running unaffected.
 
 2. **Security & Permissions**
-   Each driver runs with limited privileges, so a malicious or buggy driver
-   can’t compromise the entire platform. Communication occurs via secure
-   IPC channels managed by :doc:`runtime`.
+   Each driver operates with limited privileges, so a malicious or faulty driver
+   cannot jeopardize the entire platform. Communication takes place through
+   secure IPC channels managed by :doc:`runtime`.
 
 3. **Extensibility**
-   Drivers can be updated or replaced independently. You might have an
-   official “renderer” driver plus community variants that add advanced
+   Drivers can be updated or replaced independently. For instance, an official
+   “renderer” driver could coexist with community variants offering advanced
    post-processing or specialized VR features.
 
 4. **Dataflow-Friendly**
-   Each driver exposes inputs/outputs in the overall dataflow pipeline,
-   allowing you to chain or compose transformations. For instance, the
-   audio driver might publish an FFT data stream that a separate visual
-   effect driver consumes.
+   Each driver presents inputs and outputs in a global dataflow pipeline. For
+   example, an audio driver might provide an FFT data stream, which a visual
+   effect driver can subscribe to and process.
 
 Driver Examples
 ---------------
 
-Common drivers (many are planned or partially implemented) include:
+Several drivers—either planned or partially implemented—include:
 
 - **Renderer** (Vulkan-based)
-  Handles rasterization, path tracing, or hybrid workflows. Exposes a
-  render graph interface and surfaces for window/VR usage.
+  Manages rasterization, path tracing, or hybrid workflows. Offers a render
+  graph interface and window/VR surfaces.
 
 - **Audio**
-  Mixes audio channels, applies DSP/FFT, and outputs stereo or spatial
-  sound. It can also produce a frequency analysis stream for visual
-  scripting or scene-driven effects.
+  Mixes channels, applies DSP/FFT, and outputs stereo or spatial audio. May
+  also supply frequency data for real-time visualization or scene-driven effects.
 
 - **Window**
-  Manages a desktop window context for non-VR usage. Dispatches window
-  events (keyboard, mouse) to the engine or other drivers. On some
-  platforms, you might have a separate “headless” driver that does not
-  create a real window.
+  Maintains a desktop window context for non-VR usage, relaying window events
+  (keyboard, mouse) to the engine. On some platforms, a “headless” driver may
+  skip creating a visible window.
 
 - **OpenXR/VR**
-  Bridges to VR headsets and controllers using OpenXR or another VR API.
-  Feeds tracking data (headset pose, hand controllers) to the engine,
-  and receives frames for the left/right eye from the renderer driver.
+  Connects VR headsets and controllers via OpenXR or other VR APIs. Sends
+  headset and controller tracking data to the engine, while receiving left/right
+  eye frames from the renderer.
 
 - **Input/Gamepad**
-  Gathers gamepad or generic input device data. Feeds them into the
-  engine ECS or input mapping logic. Might also handle haptics for
-  controllers if applicable.
+  Collects data from gamepads or other input devices. Routes input to the ECS
+  or input-mapping logic. May handle controller haptics, if supported.
 
 - **Networking** (optional)
-  If you run a networked environment, a networking driver could handle
-  real-time packet sending/receiving, user authentication, or direct
-  peer-to-peer connections.
+  For networked scenarios, a networking driver manages packet transmission,
+  user authentication, or peer-to-peer connections.
 
-- **Scripting Compiler** (optional advanced scenario)
-  You could imagine a dedicated process for compiling user scripts (or
-  visual graphs) to native code, though some projects embed the compiler
-  in the engine directly. The driver approach can keep heavy compile
-  tasks from blocking the main engine thread.
+- **Scripting Compiler** (optional, advanced)
+  A dedicated process could compile user scripts (or visual graphs) into native
+  code. Some projects embed this compiler into the engine itself, but a separate
+  driver can offload heavy compile tasks.
 
 Lifecycle & Communication
 -------------------------
 
 1. **Spawned by SyncraRuntime**
-   As explained in :doc:`runtime`, each driver is a separate process launched
-   at startup (or on-demand) based on your config. If it crashes, the runtime
-   may restart it automatically.
+   As described in :doc:`runtime`, each driver is launched at startup (or on
+   demand) according to configuration. If a crash occurs, the runtime may
+   attempt an automatic restart.
 
 2. **Dataflow Registration**
-   Once up, the driver declares its available “input streams” and “output
-   streams” to the dataflow manager. For example, the audio driver outputs
-   an “audioSamples” stream, which other processes can subscribe to.
+   Once running, the driver advertises its “input streams” and “output streams”
+   to the dataflow manager. For example, an audio driver might expose
+   “audioSamples,” which other drivers or the engine can subscribe to.
 
 3. **Execution Loop**
-   Each driver runs at its own pace—some at a high frame rate (rendering),
-   others event-driven (input). The driver is basically a small specialized
-   application, responding to IPC messages and producing data for the engine
-   or other drivers.
+   Drivers typically run at their own rate—some (like rendering) maintain a high
+   frame rate, others (like input) respond to events. Each driver acts like a
+   specialized mini-application, processing IPC messages and passing results to
+   the engine or other drivers.
 
 4. **Error Handling / Crashes**
-   If something goes wrong, the runtime logs the crash details. The driver can
-   be automatically restarted if configured. Because the ECS or other worlds
-   run in separate processes, a renderer crash doesn’t destroy the game state.
+   On errors, the runtime logs the event. If configured, SyncraRuntime restarts
+   the driver automatically. Because the engine (and ECS) run in other processes,
+   a renderer crash does not destroy the game state.
 
 5. **Shutdown**
-   When the user quits or a signal is sent to shut down, SyncraRuntime instructs
-   each driver to close gracefully, so they can release system resources (audio
-   devices, GPU contexts, etc.).
+   At exit or when a shutdown signal is received, SyncraRuntime notifies each
+   driver to shut down gracefully, releasing resources such as audio devices,
+   GPU contexts, or window handles.
 
 Driver Internals & Dataflow
 ---------------------------
 
-Internally, each driver typically has:
+A typical driver includes:
 
-- **Initialization**: Acquire hardware handles (e.g., opening an audio device),
-  setting up Vulkan contexts, hooking input devices, etc.
-- **Main Loop**: Read incoming commands or data from the IPC queue, process
-  or transform them, and publish outputs (like “RenderFrame” or “AudioBuffer”).
-- **Update**: Might maintain its own internal state or caches (e.g., a
-  ring buffer for audio). If the driver is strictly functional, it can
-  remain stateless, pulling all necessary info from the engine each frame.
-- **Tear Down**: Clean up resources, close device handles, free memory.
+- **Initialization**
+  Acquiring hardware interfaces (audio devices, Vulkan contexts, input devices).
+- **Main Loop**
+  Reading commands/data from the IPC queue, applying transformations, and
+  publishing outputs (e.g., `RenderFrame` or `AudioBuffer`).
+- **Update**
+  Some drivers keep internal state or caches (e.g., audio ring buffers). A
+  purely functional driver could remain stateless, pulling all necessary info
+  from the engine each update.
+- **Tear Down**
+  Releasing system resources, closing device handles, and freeing memory.
 
-For more on how data streams chain together, see :doc:`dataflow`.
+For more details on connecting driver outputs to other subsystems, see
+:doc:`dataflow`.
 
 Creating a New Driver
 ---------------------
 
-Suppose you want a specialized driver for *holographic displays*. You’d:
+Suppose you need a driver for *holographic displays*. You would:
 
-1. **Write a Rust (or C++) application** that can stand alone, hooking into your
-   specialized hardware or library.
-2. **Implement the SyncraEngine driver interface**—some minimal IPC protocol
-   (like a message loop or shared memory queue) to announce what streams you
-   provide or consume.
-3. **Configure** the runtime to launch this driver. For instance, in
-   `SyncraConfig.toml`:
+1. **Develop a Rust (or C++) application** that integrates with specialized
+   hardware or libraries.
+2. **Implement the SyncraEngine driver interface**—essentially an IPC protocol
+   for sharing what data streams you produce or consume.
+3. **Update the Runtime Configuration** so SyncraRuntime knows to launch your
+   driver. For example, in `SyncraConfig.toml`:
 
    .. code-block:: toml
 
        [drivers]
        hologram = true
-       # points to the driver exe or alias that the runtime uses
+       # references the driver executable or alias recognized by the runtime
 
-4. **Handle Dataflow**: If your driver outputs something like “HologramFrame,”
-   define a small struct or format so the engine (or a scene driver) can consume
-   it. If you need data from the engine, define an input stream (e.g., “SceneBuffer”)
-   that your driver listens to.
+4. **Define Dataflow**
+   If your driver emits “HologramFrame,” decide on a struct or format so the
+   engine (or a scene driver) can consume it. If your driver needs input from
+   the engine, define an input stream (e.g., “SceneBuffer”).
 
 Security & Permissions
 ----------------------
 
-Some drivers require special OS privileges or sensitive hardware access (e.g.,
-GPU driver, VR handshake). SyncraEngine typically uses OS sandboxing or user-level
-permissions to restrict what a driver can do:
+Some drivers need elevated OS privileges or direct hardware access (GPU, VR
+devices). SyncraEngine usually leverages OS sandboxing and user permissions to
+constrain driver actions:
 
-- **File Access**: Many drivers don’t need full read/write across the entire
-  filesystem—only a local config directory or ephemeral data.
-- **Network**: The networking driver might be the only driver allowed to open
-  sockets, ensuring random drivers can’t exfiltrate data or run malicious code.
-- **GPU**: The renderer driver might exclusively hold a Vulkan handle, while
-  other drivers (like a path tracing sub-driver) use shared textures in
-  memory but not direct GPU control.
+- **File Access**
+  Many drivers only require a local config folder or temporary files, not full
+  access to the filesystem.
+- **Network**
+  The networking driver alone might handle network sockets, preventing other
+  drivers from opening arbitrary connections.
+- **GPU**
+  Only the renderer driver may hold a Vulkan handle. Other graphics-focused
+  drivers could share textures via memory pointers but lack full control over
+  the GPU.
 
 Future Plans & Advanced Drivers
 -------------------------------
 
-- **Distributed Drivers**: Potentially run resource-hungry drivers on another
-  machine or container—like a high-end GPU server for path tracing—while
-  the local runtime and engine handle input and simpler rendering tasks.
-- **Compositing**: Multiple render drivers could feed into a final
-  compositing driver. Or an advanced audio driver might chain with a DSP driver
-  for more extensive mixing and real-time audio analysis.
-- **Machine Learning**: A dedicated driver for AI/LLM-based features, hooking
-  into the engine for chatbots or procedural content generation. Could run
-  outside the main process to prevent memory issues or performance stalls.
+- **Distributed Drivers**
+  Run GPU-intensive tasks on remote machines or containers, while the local
+  runtime and engine handle input or simpler rendering passes.
+
+- **Compositing**
+  Multiple renderer drivers could feed a final compositing driver, or an
+  advanced audio driver might hand off data to a DSP driver for extended
+  mixing and real-time analysis.
+
+- **Machine Learning**
+  Use a specialized AI/LLM driver to handle tasks like chatbots or procedural
+  generation, running outside the main process for stability and performance.
 
 References & Next Steps
 -----------------------
 
-- :doc:`runtime` explains how drivers are spawned and monitored by SyncraRuntime.
-- :doc:`engine_ecs` covers how driver data is integrated into the ECS or how
-  the engine publishes data for the drivers.
-- :doc:`scripting` for an overview of how drivers might interact with or be
-  extended by scripts.
-- :doc:`dataflow` for details on the transformations, streams, and
-  scheduling that tie multiple drivers together.
-
+- :doc:`runtime` explains how SyncraRuntime spawns and monitors drivers.
+- :doc:`engine_ecs` details how driver data integrates with the ECS, or how the
+  engine publishes data for drivers to read.
+- :doc:`scripting` explores how drivers may interact with or be extended by scripts.
+- :doc:`dataflow` discusses transformations, streams, and scheduling that link
+  various drivers together.

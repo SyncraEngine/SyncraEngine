@@ -2,69 +2,75 @@
 Scripting in SyncraEngine
 ==============================
 
-SyncraEngine includes a *sandboxed, compiled* scripting system that drives gameplay,
-world logic, and high-level behaviors. Scripts can define new components, systems,
-and transformations that the **engine** executes each frame. Because these scripts
-run at near-native speed (via LLVM or a similar approach), they can handle
-real-time VR interactivity without the performance pitfalls of high-level interpreted
-languages.
+SyncraEngine offers a *sandboxed, compiled* scripting system that powers gameplay,
+world logic, and high-level interactions. Scripts can introduce new components,
+systems, and transformations that the **engine** executes each frame. Because
+scripts compile to near-native speed (via LLVM or a similar approach), they can
+handle real-time VR interactivity without the overhead often seen in
+high-level interpreted languages.
 
 Why a Dedicated Scripting System?
 --------------------------------
 
-- **Customizability**: Let world creators add or modify features without
-  recompiling the entire engine.
-- **Performance**: By compiling scripts to native code, we avoid overhead from
-  garbage-collected or purely interpreted solutions (no JIT).
-- **Security**: The scripting environment is sandboxed, meaning scripts cannot
-  directly call OS APIs or memory outside declared boundaries.
-- **Functional & Dataflow**: The system plays well with SyncraEngine’s dataflow
-  drivers and functional ECS. You can express transformations on components,
-  or define driver-level logic in a node/graph style.
+- **Customizability**
+  Allows creators to add or adjust features without rebuilding the entire engine.
+
+- **Performance**
+  Compiling scripts to native code avoids garbage collection or purely interpreted
+  overhead (no JIT).
+
+- **Security**
+  The scripting environment is sandboxed, preventing direct OS API calls or
+  unauthorized memory access.
+
+- **Functional & Dataflow Friendly**
+  Scripts integrate with SyncraEngine’s dataflow drivers and functional ECS,
+  enabling both component-based transformations and driver-level logic.
 
 Overview of the Scripting Workflow
 ----------------------------------
 
 1. **Define Components & Systems**
-   A script might declare new ECS components (e.g., `Health`, `Projectile`)
-   and system functions that read/write them. It can also specify dependencies
-   (e.g., “run after `InputSystem`”).
+   A script may declare new ECS components (e.g., `Health`, `Projectile`) and
+   system functions that read/write them. Dependencies (e.g., “run after
+   `InputSystem`”) can also be specified.
 
 2. **Compile to IR / Native**
-   The scripting compiler (using LLVM or similar) takes in your script code,
-   checks it for correctness, and emits native objects. The engine can load
-   these objects dynamically.
+   A dedicated compiler (LLVM or similar) processes the script code, validates
+   it, and produces native objects. The engine then loads these objects
+   dynamically.
 
 3. **Register with the ECS**
-   Once loaded, new systems and components appear in the ECS scheduling
-   graph. The engine resolves read/write sets to avoid data races, and
-   merges them into the normal engine update loop.
+   Once loaded, the newly introduced systems and components appear in the ECS
+   scheduling graph. The engine manages their read/write sets to prevent data
+   conflicts, treating them like any other built-in system.
 
 4. **Sandbox & Permissions**
-   The script has no direct syscalls or global memory access. The engine
-   enforces read/write constraints on components. If a script tries to
-   reference something it’s not allowed, it’s either blocked or flagged
-   at compile time.
+   Scripts have no direct system calls or global memory access. The engine
+   enforces component read/write restrictions. Attempts to reference
+   unauthorized data are blocked or flagged at compile time.
 
 5. **Hot-Reload or Restart**
-   If you update a script, SyncraEngine can recompile and swap the new
-   version at runtime (if no major structural changes occur), or do a partial
-   engine restart. This is crucial for iterative development in VR.
+   Scripts can be recompiled and swapped in at runtime (if no major structural
+   changes occur), or the engine can do a partial restart. This is vital for
+   iterative development in VR.
 
 Language & Syntax
 -----------------
 
-The user has considered multiple inspirations (Scala-like, F#, ML, Haskell, typed
-Python, etc.). While final decisions are still evolving, the scripting language
-generally aims to be:
+Multiple syntactic inspirations are under consideration (e.g., Scala-like,
+F#, ML, Haskell, typed Python). Regardless of final style, the scripting
+language aims to be:
 
-- **Statically Typed**: So we can catch errors and generate efficient IR.
-- **Functional-Style**: Minimizes side-effects; “pure” functions are easier
-  to schedule in parallel.
-- **Component-Oriented**: Syntax for defining ECS components and specifying
+- **Statically Typed**
+  Facilitates compile-time checks and efficient IR generation.
+- **Functional-Style**
+  Reduces side effects; “pure” functions simplify parallel scheduling.
+- **Component-Oriented**
+  Provides built-in support for declaring ECS components and specifying
   which systems read or write them.
 
-A minimal example might look like:
+A minimal sample:
 
 .. code-block:: pseudo
 
@@ -84,115 +90,128 @@ A minimal example might look like:
        }
    }
 
-When compiled, `RotateEntity` becomes a native function with read/write sets
-declared. The engine schedules it accordingly.
+At compile time, `RotateEntity` becomes a native function detailing its read/write
+sets. The engine’s scheduler then integrates it into the ECS update loop.
 
 Integration with ECS & Drivers
 ------------------------------
 
-Each script’s systems integrate seamlessly with the ECS concurrency model
-(:doc:`engine_ecs`). For example:
+Every system defined by a script fits into the ECS concurrency model
+(:doc:`engine_ecs`). For instance:
 
-- **Driver Data**: A VR driver may publish “controller pose” components. A script
-  system that reads them can handle interactions or animations.
-- **User-Level Logic**: Scripts can add features like “open a UI panel if a certain
-  input is pressed.” They might do so by reading “InputState” from a driver and
-  writing to “UIPanel” components in the ECS.
+- **Driver Data**
+  A VR driver may publish “controller pose” components. A script system that
+  reads those components can handle interactions or animations.
+- **User-Level Logic**
+  Scripts can add features such as “opening a UI panel when a certain button is
+  pressed,” accomplished by reading “InputState” from a driver and writing to
+  “UIPanel” components in the ECS.
 
 Dataflow vs. Scripting
 ----------------------
 
-- **Drivers & Dataflow**: Typically, dataflow logic covers low-level transformations
-  or I/O handling—like audio mixing, VR input filtering, or rendering passes. These
-  are mostly stateless or minimal-state computations external to the ECS.
-- **Scripting & ECS**: Scripting handles *world logic* (e.g., how entities move,
-  react, spawn, or despawn). Scripts are “systems” that read/write ECS components,
-  or define new ones for specialized usage.
+- **Drivers & Dataflow**
+  Typically handle lower-level transformations or I/O tasks (e.g., audio
+  mixing, VR input filtering, rendering passes). They tend to be stateless or
+  minimally stateful and run outside the ECS.
 
-In some advanced scenarios, a user might combine both approaches:
+- **Scripting & ECS**
+  Manages *world logic*: how entities move, respond, spawn, or despawn. Scripts
+  appear as “systems” that read/write ECS components or introduce new ones for
+  specialized purposes.
 
-- **Graph Nodes**: A dataflow node that calls into a scripting function for advanced
-  calculations.
-- **Systems**: A script-based system that references dataflow outputs from a driver
-  channel.
+In advanced use cases, both can work together:
+
+- **Graph Nodes**
+  A dataflow node might call a script function for complex calculations.
+- **Systems**
+  A script-based system could process data exposed by a driver channel.
 
 Security & Sandbox
 ------------------
 
-Given that scripting is compiled to native code, you might wonder if scripts can
-compromise the host. **SyncraEngine** addresses this with:
+Since scripts compile to native code, security measures are essential:
 
-- **Limited Syscalls**: The engine’s compiler toolchain strips or disallows direct
-  system calls. All OS/hardware access is through the engine’s permissioned APIs.
-- **Verification**: The compile process can occur in a separate “build sandbox.” If
-  code tries to link forbidden libraries, the build fails.
-- **Runtime Checks**: On load, the engine checks the script’s declared read/write sets.
-  If a script claims to read “NetworkSecrets” but lacks permission, it’s rejected.
+- **Limited Syscalls**
+  The scripting compiler disallows direct system calls. All hardware or OS
+  requests go through engine-managed APIs.
 
-In a future iteration, the engine might adopt a technique like eBPF-style checks or
-formal verification for certain critical scripts—especially if user content grows
-wildly.
+- **Verification**
+  Compilation can occur in a “build sandbox.” Any attempt to link forbidden
+  libraries or functions causes the build to fail.
+
+- **Runtime Checks**
+  Scripts declare read/write sets for ECS components. If a script tries
+  to read “NetworkSecrets” without permission, the engine rejects it.
+
+Future releases may incorporate advanced methods like eBPF-style verification
+or formal checks, especially as user-generated content scales up.
 
 Hot-Reload & Version Control
 ----------------------------
 
-1. **Incremental Builds**: During development, a script’s changes can be recompiled
-   quickly, producing a new .so/.dll/.dylib.
-2. **Live Swapping**: If a system’s data layout remains compatible, the engine
-   can swap out the old function pointer for the new one at runtime—**hot reload**.
-3. **Versioning**: The user can commit script changes to a local repo or the
-   official SyncraCloud version control. This ensures updates are tracked,
-   tested, and distributed easily.
+1. **Incremental Builds**
+   A script can be recompiled quickly during development, producing a fresh
+   `.dll/.so/.dylib`.
+
+2. **Live Swapping**
+   If the updated system’s memory layout is compatible, the engine can hot-reload
+   the new function without a full restart.
+
+3. **Versioning**
+   Scripts are tracked via local or cloud-based repos. This setup enables rapid
+   iteration, testing, and sharing of updates.
 
 Graphical vs. Textual Scripting
 -------------------------------
 
-While a textual language is straightforward for advanced users, many VR
-creators prefer a **visual scripting** approach (node-based). The engine
-plans to accommodate both:
+Many creators prefer a **visual scripting** interface (node-based), while others
+favor a **textual** language:
 
-- **Textual**: For advanced devs comfortable with typed syntax, functional
-  concepts, etc.
-- **Visual/Graph**: Similar to Unreal’s Blueprint or Unity’s Shader Graph,
-  letting you connect nodes for logic or visuals. Under the hood, this
-  still compiles to the same IR.
+- **Textual**
+  Suited for those familiar with typed syntax and functional patterns.
+- **Visual/Graph**
+  Similar to Unreal’s Blueprint or Unity’s Shader Graph, allowing logic or visual
+  effects to be composed by linking nodes. Internally, these graphs still compile
+  to the same IR as textual scripts.
 
 Scripts and Packages
 --------------------
 
-User scripts can be:
+Scripts can be distributed as:
 
-- **Standalone**: A single `.syn` (or your chosen extension) file that
-  declares new components/systems. Good for small features or prototypes.
-- **Package**: Bundled with multiple scripts, assets, or drivers. Might
-  define a “Physics” package or “Vehicle” package that others can reuse.
-- **Official Packages**: The core dev might release “IK,” “UI,” or
-  “Physics” packages maintained by the project. A script might just tie
-  those official components and systems together for custom usage.
+- **Standalone**
+  A single `.syn` file (or similar extension) declaring new components/systems.
+- **Package**
+  Multiple scripts plus assets or drivers, forming a reusable “Physics,” “UI,”
+  or “Vehicle” module.
+- **Official Packages**
+  Curated sets maintained by the project, such as “IK” or “UI.” A user script
+  might simply bind these official modules to a custom workflow.
 
 Future Directions
 -----------------
 
-- **Advanced Type System**: Explore ML/Haskell-like type inference to reduce
-  boilerplate for VR devs who want quick iteration.
-- **WASM or Bytecode**: Possibly compile scripts to a portable IR (like
-  WebAssembly) for easy cross-platform usage. The engine can JIT or AOT compile.
-- **Remote Scripting**: Let users load or hot-reload scripts from the
-  cloud or from each other during a shared VR session.
+- **Advanced Type System**
+  Borrowing concepts from ML/Haskell for type inference, streamlining VR dev
+  workflows.
+- **WASM or Bytecode**
+  Considering WebAssembly or a similar portable IR. The engine could just-in-time
+  or ahead-of-time compile it for different platforms.
+- **Remote Scripting**
+  Potential to load or hot-reload scripts from a cloud service or between users
+  in a shared VR session.
 
 Conclusion
 ----------
 
-Scripting is a crucial layer that empowers creators to build dynamic VR
-experiences on top of SyncraEngine’s ECS and multi-process runtime. By combining
-native-level performance, robust sandboxing, and a developer-friendly language,
-we aim to create a flexible environment for everything from simple
-interactive worlds to deeply complex real-time simulations.
+Scripting provides a vital layer that empowers creators to build dynamic VR
+experiences using SyncraEngine’s ECS and multi-process infrastructure. By
+combining near-native performance, strong sandboxing, and a developer-friendly
+language, it enables everything from quick prototypes to intricate
+real-time simulations.
 
-To learn more about how scripts interface with the ECS concurrency, see
-:doc:`engine_ecs`. For lower-level data transformations or driver
-customizations, check out :doc:`dataflow`. And if you want to see how the
-script compilation pipeline integrates with the rest of the engine’s build
-process, you can read about it in :doc:`../features/rendering` (if relevant)
-or keep an eye on future devlogs for details on script compilation steps.
-
+To see how scripts interact with the ECS concurrency model, check out
+:doc:`engine_ecs`. For details on lower-level data transformations or driver
+logic, see :doc:`dataflow`. For upcoming details on script compilation and
+packaging, follow the devlogs or refer to future sections in this documentation.

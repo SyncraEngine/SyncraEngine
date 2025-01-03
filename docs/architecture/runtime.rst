@@ -2,76 +2,76 @@
 SyncraRuntime: The Heart of the Engine
 =====================================
 
-SyncraRuntime is the central daemon (or “watchdog”) responsible for spawning,
-monitoring, and coordinating all other processes in SyncraEngine, including
-drivers and engine instances. This multi-process design ensures stability,
-security, and modularity—if one subprocess crashes, the runtime can isolate and
-restart it without taking down the entire platform.
+SyncraRuntime acts as the central daemon (or “watchdog”) for SyncraEngine. It
+spawns, monitors, and coordinates all other processes, including drivers and
+engine instances. This multi-process approach improves stability, security, and
+modularity—if one subprocess crashes, SyncraRuntime can isolate and restart it
+without shutting down the entire platform.
 
 Key Responsibilities
 --------------------
 
 1. **Process Management**
-   - **Launch**: Start driver processes (renderer, audio, input, etc.) and
-     engine instances (worlds) at platform startup.
-   - **Restart**: If a driver or engine crashes unexpectedly, SyncraRuntime
-     detects this and restarts it, preserving logs or crash metadata for
-     debugging.
-   - **Shutdown**: Cleanly shuts down processes in the correct order when
-     the user quits or a graceful shutdown is requested.
+   - **Launch**: Starts driver processes (renderer, audio, input, etc.) and
+     engine instances (worlds) during platform startup.
+   - **Restart**: Detects crashes in drivers or engine instances and restarts
+     them, preserving logs or crash metadata for debugging.
+   - **Shutdown**: Cleans up processes in the correct order when the user quits
+     or a graceful shutdown occurs.
 
 2. **Configuration & Initialization**
-   - Loads a global config file (e.g., `SyncraConfig.toml`) that specifies
-     which drivers to enable, cloud settings, networking mode, etc.
-   - Passes relevant config chunks to each driver or engine upon launch,
-     often via command-line arguments or shared memory.
+   - Loads a global config file (e.g., `SyncraConfig.toml`) that specifies which
+     drivers to enable, cloud settings, networking modes, and more.
+   - Passes relevant configuration details to each driver or engine upon startup
+     (via command-line arguments or shared memory).
 
 3. **Inter-Process Communication (IPC)**
-   - Provides a standard messaging layer or dataflow API so drivers and
-     engine instances can exchange events, transformations, or state data.
-   - Maintains a small broker or router logic that helps processes find the
-     correct recipient for their messages (especially relevant if multiple
-     worlds and drivers are running).
+   - Provides a standardized messaging layer or dataflow API so drivers and
+     engine instances can exchange events, transformations, and state data.
+   - Maintains routing logic so messages reach the correct targets, which is
+     especially important when multiple worlds or drivers are running.
 
 4. **Security & Sandbox**
-   - Encapsulates each driver/engine in a restricted environment with only
-     the privileges it needs (e.g., file I/O, GPU access if applicable).
-   - Optionally uses OS-level process isolation or containerization for
-     additional security boundaries.
+   - Runs each driver/engine in a restricted environment with only the
+     permissions it needs (e.g., file I/O, GPU access if applicable).
+   - May employ OS-level process isolation or containerization for tighter
+     security boundaries.
 
 5. **Lifecycle Hooks & Callbacks**
-   - Allows custom actions at certain stages (e.g., a “before-render-driver-start”
-     hook or “on-engine-crash” callback) for logging, telemetry, or user
-     notifications.
+   - Exposes events at various stages (e.g., “before-render-driver-start” or
+     “on-engine-crash”) for logging, telemetry, or user notifications.
 
 Why a Separate Runtime?
 -----------------------
 
-In many traditional engines, everything runs in one monolithic process. SyncraEngine
-deliberately separates the “management” logic from the rest:
+Traditional engines often bundle everything into one monolithic process.
+SyncraEngine separates the “management” logic into a standalone runtime:
 
-- **Crash Containment**: If the renderer or scripting engine crashes, SyncraRuntime
-  stays up. This approach often saves debugging time and prevents system-wide
-  meltdown.
-- **Better Scaling**: Large-scale or headless servers can spin up multiple engine
-  instances (worlds) under a single runtime. Each world remains isolated but still
-  orchestrated from a central place.
-- **Easier Upgrades**: Subprocesses (drivers) can be updated independently, as long
-  as they conform to the same IPC/dataflow interface. The runtime can swap one
-  driver for another without rewriting the entire engine code.
+- **Crash Containment**
+  If the renderer or scripting engine crashes, SyncraRuntime remains active,
+  preventing a full system failure.
+
+- **Scalability**
+  Large or headless server deployments can run multiple engine instances
+  (worlds) under one runtime, each isolated yet coordinated centrally.
+
+- **Simplified Updates**
+  Subprocesses (drivers) can be updated independently, provided they maintain a
+  consistent IPC/dataflow interface. The runtime can swap in a new driver version
+  without requiring modifications to the core engine.
 
 Runtime vs. Engine
 ------------------
 
-It’s important to distinguish **SyncraRuntime** from the **engine** itself:
+**SyncraRuntime** differs from the **engine** itself:
 
-- **SyncraRuntime**: A minimal, low-level watchdog/manager that *starts and stops*
-  everything, orchestrates IPC, and enforces high-level security constraints.
-- **Engine**: Runs the ECS, concurrency scheduling, scripting, and the world
-  simulation logic. Each engine instance (i.e., each “world”) is launched by
-  the runtime in its own process.
+- **SyncraRuntime**: A minimal, low-level watchdog/manager that oversees
+  process startup/shutdown, IPC, and security constraints.
+- **Engine**: Handles the ECS, concurrency scheduling, scripting, and world
+  simulation. Each engine instance (or “world”) is launched by the runtime
+  in a separate process.
 
-Here’s a rough example of how they fit together:
+A high-level overview might look like this:
 
 .. mermaid::
    flowchart TB
@@ -87,11 +87,11 @@ Common Startup Sequence
 -----------------------
 
 1. **Runtime Launch**
-   The user (or OS) starts SyncraRuntime, which loads the global config
-   and logs the session start time.
+   The OS or user starts SyncraRuntime, which loads the global config and logs
+   the session start time.
 
 2. **Driver Spawns**
-   Based on the config, SyncraRuntime spawns each driver as a separate
+   According to the config, SyncraRuntime spawns each driver as its own
    subprocess:
    - renderer.exe / .app / .sh
    - audio.exe
@@ -99,26 +99,22 @@ Common Startup Sequence
    - etc.
 
 3. **World Creation**
-   The runtime then starts the main engine process for the default world
-   (or multiple worlds if you have a multi-world server). Each world is
-   an independent engine instance.
+   The runtime then starts the main engine process for the default world, or for
+   multiple worlds if configured. Each world is an independent engine instance.
 
 4. **Monitoring**
-   Throughout execution, SyncraRuntime receives health or heartbeat pings
-   from each driver/engine. If a ping fails or a crash is detected,
-   SyncraRuntime logs the event, kills the crashed process (if still open),
-   and restarts it if configured to do so.
+   SyncraRuntime receives periodic heartbeats from drivers and engine processes.
+   If a heartbeat is missed or a crash occurs, SyncraRuntime logs the event,
+   terminates the process (if still running), and restarts it if configured.
 
 5. **Shutdown**
-   When the user quits or a SIGTERM is received, SyncraRuntime sends
-   graceful shutdown signals to each driver and engine instance, collects
-   logs, and finalizes any cleanup.
+   Upon user exit or a SIGTERM, SyncraRuntime sends shutdown signals to each
+   driver/engine, gathers logs, and finishes cleanup.
 
 Configuring the Runtime
 -----------------------
 
-A minimal snippet of a possible config file (`SyncraConfig.toml`) might look
-like:
+A possible `SyncraConfig.toml` might look like this:
 
 .. code-block:: toml
 
@@ -134,68 +130,77 @@ like:
     [worlds]
     default_world = "my_base_world"
 
-- **`[runtime]`**: Settings that affect how often SyncraRuntime checks on
-  driver health, whether it restarts them automatically, etc.
-- **`[drivers]`**: Which drivers to spawn at startup. If `openxr = true`,
-  then an OpenXR driver process is launched, for instance.
-- **`[worlds]`**: Tells the runtime which engine instance(s) to create on
-  startup, by name or path.
+- **`[runtime]`**
+  Manages the frequency of process health checks and whether to restart
+  crashed processes automatically.
+- **`[drivers]`**
+  Specifies which drivers to launch on startup. For example, `openxr = true`
+  would enable a VR driver.
+- **`[worlds]`**
+  Indicates which engine instance(s) to start, by name or path.
 
 IPC & Messaging Model
 ---------------------
 
-Currently, SyncraEngine supports a variety of messaging strategies, from
-shared memory queues to named pipes or sockets, depending on the target OS
-and user preference. The runtime coordinates the initial handshake:
+SyncraEngine supports multiple IPC methods—shared memory queues, named pipes,
+or sockets—depending on OS and user preference. The runtime facilitates the
+initial connections:
 
-1. **Driver Registration**: Each driver registers its “input/output channels”
-   with the runtime so other processes know how to send data to it.
-2. **Engine Binding**: When an engine process boots, it queries the runtime
-   for references to each driver’s input/output channels.
-3. **Ongoing Dataflow**: Once connected, the driver and engine communicate
-   directly in a dataflow manner, occasionally sending heartbeats or crash
-   status updates back to the runtime.
+1. **Driver Registration**
+   Each driver registers its “input/output channels” with the runtime to help
+   other processes locate it.
 
-For more details on how inputs/outputs or transformations are structured,
-see :doc:`dataflow`.
+2. **Engine Binding**
+   When an engine process starts, it queries the runtime for the appropriate
+   driver channels.
+
+3. **Ongoing Dataflow**
+   Once linked, engine processes and drivers communicate directly, sending
+   heartbeats or crash updates to the runtime as needed.
+
+See :doc:`dataflow` for details on structuring inputs/outputs or transformations
+in these pipelines.
 
 Crash Reporting & Logs
 ----------------------
 
-SyncraRuntime typically stores logs in a dedicated folder, e.g.,
-`logs/runtime_<timestamp>.txt`. Each driver/engine also writes logs with
-a naming convention that includes the process ID or unique name. If a crash
-occurs, the runtime records:
+SyncraRuntime stores logs (e.g., `logs/runtime_<timestamp>.txt`) and each driver
+or engine writes process-specific logs. During a crash, the runtime records:
 
 - **Timestamp & Process Name**
-- **Exit Code** (if any)
-- **Crash Dump** or partial stack trace (platform dependent)
-- **Reason** (if known)
+- **Exit Code** (if available)
+- **Crash Dump** or partial stack trace (platform-dependent)
+- **Potential Cause** (if identifiable)
 
-Developers can review these logs after a session to see if, say, the renderer
-crashed due to an out-of-memory error or a script triggered an assertion.
+These logs can be used post-session to diagnose causes, such as an out-of-memory
+error in the renderer or a script assertion failure.
 
 Extending the Runtime
 ---------------------
 
-In the future, the runtime might incorporate:
+Future enhancements may include:
 
-- **Remote Management**: Remotely spin up engine instances from a web dashboard
-  or cloud-based control plane.
-- **Distributed Drivers**: Offload certain drivers to separate machines or
-  containers (e.g., GPU-hungry rendering in a data center).
-- **Modular Upgrades**: Let advanced users or devs supply custom runtime
-  “plugins” to alter how processes are monitored or logs are handled.
+- **Remote Management**
+  Allowing users to control engine instances from a web dashboard or a
+  cloud-based service.
+
+- **Distributed Drivers**
+  Running certain drivers on separate machines or containers for more
+  GPU-intensive tasks.
+
+- **Custom Runtime Plugins**
+  Letting advanced developers modify how process monitoring or logging is
+  handled, or how new driver configurations are discovered.
 
 Where to Next?
 --------------
 
-- :doc:`drivers` for details on each driver type (renderer, audio, input, VR).
-- :doc:`engine_ecs` for how the engine processes run worlds via ECS.
-- :doc:`scripting` for more on sandboxed IL or code that runs inside each engine
-  process.
+- :doc:`drivers` for deeper information about individual driver types (renderer,
+  audio, input, VR).
+- :doc:`engine_ecs` for how the engine operates worlds via an ECS-based
+  architecture.
+- :doc:`scripting` for details on the sandboxed language or IL that runs within
+  each engine process.
 
-Questions? Feel free to drop by the
-`Discord <https://discord.gg/yxMagwQx9A>`_ for help configuring or extending
-SyncraRuntime, or open an issue on GitHub for broader discussions.
-
+For additional help with SyncraRuntime, visit the
+`Discord server <https://discord.gg/yxMagwQx9A>`_ or open an issue on GitHub.

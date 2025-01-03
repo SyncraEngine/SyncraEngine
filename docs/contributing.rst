@@ -2,118 +2,135 @@
 Contributing to SyncraEngine
 ===================
 
-Thank you for your interest in contributing to SyncraEngine! The project is currently
-in alpha, and we welcome help with code, testing, documentation, feedback, and auditing.
-This page outlines how to get involved, what to expect, and which channels to use.
+SyncraEngine is currently in alpha, and contributions are welcome in the form of
+code, testing, documentation, feedback, and security auditing. This page provides
+an overview of how to get involved, what to expect, and where to collaborate.
 
 Getting Started
 ---------------
 
 1. **Join the Discord**
-   Our `Discord server <https://discord.gg/yxMagwQx9A>`_ is where you’ll find
-   real-time discussion about development, testing announcements, and user support.
-   We encourage everyone to drop by, even if you're just curious.
+   The `Discord server <https://discord.gg/yxMagwQx9A>`_ is where real-time
+   discussions take place on development progress, testing announcements, and
+   user support. Joining the server is encouraged even for those just exploring
+   the project.
 
-2. **Check the GitHub Issues**
-   We track bugs, feature requests, and tasks in the
-   `SyncraEngine repository <https://github.com/SyncraEngine/SyncraEngine/issues>`_.
-   If you see something that interests you or find a new bug, feel free to
-   comment or open a new issue.
+2. **Browse GitHub Issues**
+   Bugs, feature requests, and tasks are tracked on
+   `GitHub <https://github.com/SyncraEngine/SyncraEngine/issues>`_. Comment on existing
+   issues or open a new one if you encounter something that needs attention or have
+   a new idea.
 
-3. **Request Dev or Auditing Access (If Needed)**
-   The core engine repository is partially private, so if you want to do deeper
-   code contributions or security audits, you can apply via:
+3. **Request Dev or Auditing Access**
+   The core engine repository remains partially private. Contributors who need
+   deeper code access or wish to perform security audits can apply through:
    - `Developer Application <https://docs.google.com/forms/d/e/1FAIpQLSc0gTEckujjUgszlFeN69_viyBRWrHARQNbsEX4mYmDuIn13A/viewform>`_
    - `Source Auditing Application <https://docs.google.com/forms/d/e/1FAIpQLSfCcFhZwCO7ZZrI1Vkcy_BeIAvEhZcTiMjoQhZK5ewXZSpyww/viewform>`_
 
-4. **Get Familiar with the Docs**
-   - :doc:`getting_started` covers installation and alpha build usage.
-   - :doc:`architecture/index` describes the multi-process design, ECS/dataflow, and drivers.
-   - :doc:`roadmap` outlines upcoming milestones and planned features.
+4. **Familiarize Yourself with the Documentation**
+   - :doc:`getting_started` covers installation and alpha build details.
+   - :doc:`architecture/index` explains the multi-process design, ECS/dataflow,
+     and driver model.
+   - :doc:`roadmap` highlights upcoming milestones and planned features.
 
 Ways to Contribute
 ------------------
 
-- **Code Contributions**: If you have access to the code, you can implement new features,
-  fix bugs, or optimize existing systems (drivers, ECS, renderer, etc.). We'll list open
-  tasks or “help wanted” issues in GitHub.
+- **Code Contributions**
+  If repository access has been granted, contributors can implement new features,
+  fix bugs, or optimize existing systems (drivers, ECS, renderer, etc.). Open
+  tasks and “help wanted” items are labeled on GitHub.
 
-- **Documentation**: If you spot unclear explanations or missing topics, you can improve
-  the `.rst` files in this Sphinx doc. You can also help with the upcoming
-  wiki or usage guides for new features.
+- **Documentation**
+  Improvements to `.rst` files in this Sphinx documentation, as well as future
+  wiki pages or usage guides, are greatly appreciated. Clear and thorough
+  documentation benefits all users and developers.
 
-- **Testing & Feedback**: Even if you’re not coding, trying out the alpha builds and
-  reporting bugs or performance issues is **extremely** valuable. Let us know if
-  something is confusing or broken, or if you have an idea for a better workflow.
+- **Testing & Feedback**
+  Installing alpha builds, reporting bugs, and suggesting improvements are
+  extremely valuable. Post feedback on Discord or GitHub regarding performance,
+  usability, or workflow issues.
 
-- **Security Auditing**: For those with security or systems expertise, we
-  encourage code audits. We rely on a sandboxed, multi-process model, but external
-  eyes can help discover vulnerabilities or potential improvements.
+- **Security Auditing**
+  Experts in security or systems architecture can help review the sandboxed,
+  multi-process model. Insight from external auditors is vital for discovering
+  vulnerabilities or optimization opportunities.
 
-- **Feature Requests**: If you have a new idea (e.g., cloth simulation, advanced
-  audio DSP, VR hardware integration), open an issue on GitHub or post in Discord.
-  We’ll discuss feasibility and possibly add it to the roadmap.
+- **Feature Requests**
+  Suggestions for new features (e.g., cloth simulation, advanced audio DSP,
+  VR hardware support) can be submitted as GitHub issues or posted on Discord.
+  Feasibility and priority are then assessed based on community needs.
 
 Pull Requests & Branches
 ------------------------
 
 **Pull Request Guidelines**:
 
-1. **Fork** the repository (if publicly visible) or clone your private access copy.
-2. **Create a branch** describing your feature or bug fix (e.g., `feature/rigidbody-support`).
-3. **Test** your changes locally. If relevant, add or update unit/integration tests.
-4. **Submit a PR** to the `dev` branch (or whichever branch we designate for merges).
-5. Wait for a code review. We’ll do our best to review promptly but note that alpha
-   projects can be hectic!
+1. **Fork** the repository (if publicly visible) or clone the private-access copy.
+2. **Create a branch** named for the feature or fix (e.g., `feature/rigidbody-support`).
+3. **Test** the changes locally, adding or updating relevant tests if applicable.
+4. **Submit a PR** to the `dev` branch or another designated merge branch.
+5. Wait for code review. Given the alpha status, reviews may occasionally be delayed.
 
-We use a continuous integration approach, so stable builds get validated automatically.
-For major changes, please discuss them in an issue or Discord first to avoid duplication
-of effort.
+Continuous integration validates stable builds automatically. For substantial
+changes, discuss ideas in an issue or on Discord first to avoid overlap in
+development efforts.
 
 Coding Standards & Tools
 ------------------------
 
-- **Language**: Rust is used heavily for the runtime, drivers, and ECS.
-- **Formatting**: We typically run `cargo fmt` to keep formatting consistent.
-- **Linting**: We recommend `cargo clippy` for lint checks.
-- **Documentation**: If you add new public APIs, ensure that relevant docs
-  (`.rst` or doc comments) are updated.
+- **Language**: Rust is primarily used for runtime, drivers, and ECS.
+- **Formatting**: Use `cargo fmt` to maintain consistent formatting.
+- **Linting**: Run `cargo clippy` to catch potential issues.
+- **Documentation**: Update relevant docs (either `.rst` files or doc comments)
+  when introducing new public APIs.
 
 Testing & QA
 ------------
 
-- **Unit Tests**: We aim for thorough coverage in critical modules (e.g., concurrency,
-  memory management). If you fix a bug, add a regression test if possible.
-- **Integration Tests**: For drivers or ECS systems, test end-to-end usage scenarios.
-  We often do “preview builds” with these tests baked in (see :doc:`getting_started`).
-- **Performance Benchmarks**: If you’re introducing new concurrency or data structures,
-  consider adding or updating benchmarks to confirm we don’t regress on performance.
+- **Unit Tests**
+  Critical modules (e.g., concurrency and memory management) should have thorough
+  coverage. Any bug fixes should include a regression test if possible.
+
+- **Integration Tests**
+  ECS systems or drivers often require end-to-end tests. “Preview builds” are
+  released with these scenarios built in (see :doc:`getting_started`).
+
+- **Performance Benchmarks**
+  Contributions introducing significant concurrency or data structure changes
+  should ideally include benchmarks to ensure there are no performance regressions.
 
 Documentation Contributions
 ---------------------------
 
-- **Editing `.rst` Files**: The docs live in the `docs/` folder. You can modify or
-  create `.rst` pages, then run `sphinx-build` locally to preview your changes.
-- **Adding Tutorials**: If you have a neat example or how-to guide for scripting,
-  rendering, or VR usage, we welcome a short tutorial under `docs/tutorials/` or
-  in a dedicated `.rst`.
-- **FAQ / Troubleshooting**: Found a solution to a common issue? Add it to
-  :doc:`faq`.
+- **Editing `.rst` Files**
+  Documentation is located in the `docs/` folder. Modify or create `.rst` pages,
+  then run `sphinx-build` locally to verify formatting and output.
+
+- **Adding Tutorials**
+  Tutorials for scripting, rendering, or VR workflows are welcome. Short guides
+  can be placed under a `docs/tutorials/` directory or as standalone `.rst` files.
+
+- **FAQ / Troubleshooting**
+  Commonly encountered problems and their solutions belong in :doc:`faq`.
+  Consider adding new entries for recurring issues.
 
 License & Legal
 ---------------
 
-- **Source-Available**: While the main repo is currently private, we do allow
-  partial read-only access for auditing and dev. If you have questions about usage
-  rights or distribution, reach out to us directly.
-- **Contributor Agreement**: For significant code contributions, we may ask
-  you to sign a simple Contributor License Agreement (CLA). This is just to ensure
-  a clear license path if/when we open more of the code.
+- **Source Availability**
+  The main repository is currently private, though limited read-only access is
+  offered for auditing and development. Contact the maintainers with questions
+  regarding usage rights or distribution.
+
+- **Contributor Agreement**
+  For major code contributions, a Contributor License Agreement (CLA) may be
+  required to clarify license terms if the codebase becomes more open in the future.
 
 Thank You!
 ----------
 
-Your contributions—large or small—help shape SyncraEngine into a robust, open-ended
-social VR platform. If you have any questions about the process, feel free to ask
-in Discord or open an issue on GitHub. We’re excited to have you on board!
-
+Every contribution, whether bug reporting, documentation edits, or new code,
+helps shape SyncraEngine into a flexible social VR platform. Questions about
+the contribution process can be posted on Discord or opened as GitHub issues.
+The SyncraEngine team appreciates your support and looks forward to collaborating.

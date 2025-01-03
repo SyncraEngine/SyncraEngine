@@ -2,75 +2,75 @@
 Audio in SyncraEngine
 =========================
 
-SyncraEngine’s audio support focuses on **real-time mixing**, **spatialization**, and
-**digital signal processing (DSP)**, ensuring immersive experiences especially in VR.
-It’s built as a driver (see :doc:`../architecture/drivers`) so that the core engine
-and other drivers can interact via a **dataflow** pipeline (:doc:`../architecture/dataflow`)
-for maximum flexibility and concurrency.
+SyncraEngine’s audio support revolves around **real-time mixing**, **spatialization**,
+and **digital signal processing (DSP)**, delivering immersive experiences—especially
+in VR. The audio system is implemented as a driver
+(:doc:`../architecture/drivers`), allowing it to interact with the core engine
+and other drivers through a **dataflow** pipeline
+(:doc:`../architecture/dataflow`) for flexibility and concurrency.
 
 Why a Dedicated Audio Driver?
 ----------------------------
 
 1. **Crash Isolation**
-   If something goes wrong with audio decoding or DSP, the audio process can be
-   restarted without taking down the rest of the platform.
+   If audio decoding or DSP encounters an error, the audio driver process can be
+   restarted independently, leaving the rest of the platform unaffected.
 
 2. **Security**
-   Audio drivers typically need direct access to system resources (sound card, OS
-   audio APIs). Running them in a separate subprocess can reduce the risk of a
-   glitch or exploit affecting the entire engine.
+   Audio drivers often require direct access to system resources (sound cards,
+   OS audio APIs). Encapsulating this logic in a separate process reduces the
+   risk of issues or exploits impacting the entire engine.
 
 3. **Modularity & Extensibility**
    Different audio backends (e.g., WASAPI, ALSA, PulseAudio, CoreAudio) can be
-   wrapped in separate drivers, letting you swap or upgrade them without touching
-   the engine code. Additionally, advanced DSP or FFT nodes can be added to the
-   dataflow as separate transformations.
+   packaged in distinct drivers, making it easier to swap or update them without
+   modifying engine code. Additionally, advanced DSP or FFT nodes can be integrated
+   as separate transformations in the dataflow.
 
 Basic Audio Flow
 ----------------
 
 1. **Audio Input (Optional)**
-   If you have microphones or other input devices, you might have a separate
-   node for capturing audio input. The ECS or scripting system can then process
-   or forward this to remote players via networking.
+   A node may capture audio from microphones or other input devices. The ECS or
+   scripting system can process or forward this data to remote users via
+   networking if desired.
 
 2. **Audio Mixing**
-   The audio driver typically merges multiple sources (e.g., background music,
-   sound effects, voice chat) into one or more output channels. This might
-   include:
-   - Volume mixing
+   Multiple sources (e.g., background music, sound effects, voice chat) are merged
+   into one or more output channels. Mixing can include:
+   - Volume control
    - Panning
-   - Fading in/out
+   - Fading
    - Basic DSP effects
 
 3. **Spatialization / HRTF**
-   In a VR context, we often rely on head-related transfer functions (HRTF) to
-   provide 3D positional audio. The audio driver can apply an HRTF filter for
-   each source based on its position relative to the listener’s head.
+   Especially in VR, head-related transfer functions (HRTF) can create 3D positional
+   audio. The audio driver applies HRTF filters based on the relative positions of
+   audio sources and the listener’s head.
 
 4. **Output**
-   Finally, the mixed/spatialized audio is sent to the OS or hardware (speakers,
-   headphones, VR headset).
+   The mixed/spatialized audio is ultimately streamed to the OS (via speakers,
+   headphones, or a VR headset).
 
 Using FFT & DSP
 ---------------
 
-For more advanced or interactive audio features, SyncraEngine’s dataflow model
-can include **DSP transformations** like an FFT node:
+SyncraEngine’s dataflow design allows **DSP transformations** (e.g., FFT) to be
+inserted as nodes:
 
-- **FFT Node**: Transforms raw time-domain samples into frequency bins.
-- **Filtering & Effects**: A script or driver node can manipulate these bins
-  (e.g., apply an equalizer, reverb, or custom effect), then invert back to time
-  domain if needed.
-- **Visualization**: The ECS or a script might read the FFT data to drive
-  animations, UI elements (like an audio-reactive environment), or other VR
-  interactions.
+- **FFT Node**
+  Converts raw time-domain samples to frequency bins.
+- **Filtering & Effects**
+  A script or driver node can process these bins (e.g., equalization, reverb,
+  or custom effects). If necessary, data can be converted back to the time domain.
+- **Visualization**
+  The ECS or a script can read FFT outputs for animations, UI elements (such
+  as an audio-reactive environment), or other VR interactions.
 
-**GPU Acceleration**:
-If performance is a concern or you handle large channel counts, you might
-run the FFT or other DSP passes on the GPU. This is typically handled by the
-audio driver or a specialized “DSP driver node” that the dataflow system
-knows how to route samples to.
+**GPU Acceleration**
+If performance is critical—especially with many channels—FFT or other DSP steps
+can leverage GPU compute. This might be handled by the audio driver or a specialized
+“DSP driver node,” which the dataflow system routes samples to and from.
 
 Sample Dataflow
 ---------------
@@ -84,69 +84,74 @@ Sample Dataflow
        FFT --> ECS["Engine ECS\n(for visual effects)"]
        Mixer --> Output["Audio Output Node"]
 
-In the above:
+Explanation:
 
-1. **Mic Node**: Captures microphone input.
-2. **Denoise**: Applies noise reduction or gating.
-3. **Spatialize**: Positions the sound in 3D if needed (VR).
-4. **Mixer**: Combines multiple sources (music, SFX, etc.) into one stream.
-5. **FFT**: Optionally performs a frequency analysis for visual or script usage.
-6. **Output Node**: Sends final PCM data to the OS/hardware.
+1. **Mic Node**: Captures microphone input
+2. **Denoise**: Applies gating or noise reduction
+3. **Spatialize**: Positions audio in 3D (VR context)
+4. **Mixer**: Combines multiple sources (music, SFX, voice) into a unified stream
+5. **FFT**: Optionally performs frequency analysis for visualization or scripting
+6. **Output**: Sends final PCM data to the OS/hardware
 
 Scripting & the ECS
 -------------------
 
-- **Scripting** can define or extend audio logic, for example:
-  - Reacting to amplitude or frequencies in real time (e.g., pulsing a
-    “dance floor” light).
-  - Dynamically altering DSP effects based on user interactions or game
-    events.
+- **Scripting**
+  Scripts can define or modify audio logic. For instance, a script might respond
+  to amplitude or frequency data in real time (e.g., driving a “dance floor”
+  lighting effect).
 
-- **ECS** might store “AudioSource” components for each sound-emitting entity,
-  describing the audio clip, position, or volume. The audio driver reads these
-  components and merges them into the final output.
+- **ECS**
+  “AudioSource” components can represent an entity that emits sound. The audio
+  driver reads these components and incorporates them into its mixing and
+  spatialization steps.
 
 Spatial Audio / Steam Audio?
 ---------------------------
 
-We might integrate or wrap third-party solutions like **Steam Audio** if advanced
-sound propagation or occlusion is desired. However, the user has mentioned being
-hesitant about heavier libraries that might add overhead or reduce modularity.
-Depending on community demand, an optional plugin driver might be created for
-Steam Audio or other advanced libs.
+SyncraEngine may integrate third-party solutions like **Steam Audio** for advanced
+sound propagation or occlusion effects if there is sufficient community interest.
+However, there is some caution about heavier libraries that might introduce extra
+overhead or reduce modularity. An optional plugin driver could be created for
+Steam Audio or other advanced libraries if needed.
 
-Common Implementation Details
-----------------------------
+Implementation Details
+----------------------
 
-1. **Rust and OS Backends**
-   We might use libraries like `cpal`, `rodio`, or direct platform APIs for low-level
-   audio I/O in Rust, wrapped in a driver process.
+1. **Rust & OS Backends**
+   Libraries like `cpal` or `rodio` may be used for audio I/O in Rust,
+   wrapped in a driver process.
+
 2. **Channel Counts**
-   By default, the driver might handle stereo or 5.1 output. VR requires at least
-   2 channels, but spatial audio rendering can effectively produce multiple
-   “virtual channels” before flattening them.
+   By default, stereo or 5.1 might be used. VR typically requires at least
+   two channels, but positional audio can effectively generate multiple
+   “virtual channels” before final mixing.
+
 3. **Latency**
-   Minimizing audio latency is critical for VR. We might run the audio driver at
-   a higher thread priority, or in a separate real-time process, to ensure stable
-   performance.
+   Low latency is crucial for VR. The audio driver may run at a higher thread
+   priority or in a real-time process to ensure consistency.
 
 Future Plans
 ------------
 
-- **Cloud Audio**: Possibly streaming audio from the cloud or remote users in
-  real-time, integrating with the netcode driver.
-- **Scripting DSL for Audio**: Expose DSP primitives directly in the
-  scripting language so users can define custom filters, reverb, or
-  advanced effects in a high-level but efficient manner.
-- **Community Effects**: Let creators share packaged audio nodes or effect
-  chains, fostering a library of community-driven content.
+- **Cloud Audio**
+  Potential streaming of audio from the cloud or remote sessions, tied into
+  the netcode driver.
+
+- **Scripting DSL for Audio**
+  Expose DSP primitives within the scripting language, allowing custom
+  filters or effects to be defined at a higher level while retaining
+  performance.
+
+- **Community Effects**
+  Users could share packaged audio nodes or effect chains, growing a
+  community-driven library of sound modules.
 
 Summary
 -------
 
-SyncraEngine’s audio driver architecture ensures a **modular**, **dataflow-driven** approach
-to real-time audio. Whether you need basic mixing or advanced FFT-driven visuals, the
-system provides flexible nodes that can be chained together without risking your entire
-engine’s stability. For more on how drivers integrate with the engine concurrency,
-check out :doc:`../architecture/dataflow` or :doc:`../architecture/drivers`.
-
+SyncraEngine’s audio architecture adopts a **modular**, **dataflow-driven** approach
+to real-time sound. Whether handling straightforward mixing or complex FFT-based
+visuals, the system provides nodes that can be freely combined without endangering
+overall stability. To learn more about how drivers and concurrency align with audio,
+see :doc:`../architecture/dataflow` or :doc:`../architecture/drivers`.

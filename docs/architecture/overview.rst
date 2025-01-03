@@ -3,52 +3,55 @@ Architecture Overview of SyncraEngine
 ======================================
 
 Welcome to the architectural backbone of SyncraEngine. This document provides a
-high-level look at the multi-process, dataflow-based design that underpins the
-entire platform. We’ll cover how the **runtime**, **drivers**, **engine**, and
-**scripting** layers fit together, then point you to deeper dives on each topic.
+high-level overview of the multi-process, dataflow-based design that powers the
+entire platform. It covers how the **runtime**, **drivers**, **engine**, and
+**scripting** layers integrate, with links to more detailed documentation.
 
 Why a Multi-Process Engine?
 ---------------------------
 
-Most traditional game engines run in a single process, with everything
-tightly coupled (graphics, audio, input, etc.). **SyncraEngine** uses a
-**multi-process** or “driver-based” design instead:
+Many traditional game engines run in a single process, with major systems
+(graphics, audio, input, and more) tightly coupled. SyncraEngine, however,
+adopts a **multi-process** or “driver-based” design:
 
-- **Crash Isolation**: If a driver (like audio or rendering) crashes,
-  it won’t bring down the entire platform. SyncraRuntime can gracefully
-  restart that driver.
-- **Security & Permissions**: Each driver or subsystem is sandboxed,
-  reducing the risk of malicious or buggy code compromising other parts
-  of the engine.
-- **Modularity**: New drivers or specialized features (e.g., advanced
-  physics, AI, or custom render passes) can be developed or added
-  independently, without hacking core engine code.
+- **Crash Isolation**
+  A driver crash (e.g., audio or rendering) does not bring down the entire
+  platform. SyncraRuntime can automatically restart the affected driver.
+
+- **Security & Permissions**
+  Each driver or subsystem is sandboxed, reducing the risk of malicious or
+  buggy code compromising other parts of the engine.
+
+- **Modularity**
+  Specialized features or new drivers (e.g., advanced physics, AI, or custom
+  rendering passes) can be developed and integrated independently, without
+  modifying the core engine code.
 
 Core Principles
 ---------------
 
 1. **Dataflow for Drivers**
-   Each driver exposes a set of inputs and outputs in a graph-like
-   structure (nodes). A driver might receive data from other drivers or
-   from the engine, transform it, and pass results onward. This
-   “functional dataflow” approach clarifies concurrency and ordering.
+   Each driver presents a set of inputs and outputs in a graph-like structure.
+   Drivers receive data from other drivers or the engine, perform transformations,
+   and pass results onward. This “functional dataflow” model helps clarify
+   concurrency and execution order.
 
 2. **Functional ECS for Worlds**
-   Each world is driven by an ECS (Entity-Component-System) that updates
-   in parallel where possible. Systems declare their read/write component
-   dependencies, so the engine can schedule them without race conditions.
+   Each world runs under an Entity-Component-System (ECS) paradigm that updates
+   in parallel whenever possible. Systems declare read/write dependencies on
+   components, allowing the engine to schedule execution without causing race
+   conditions.
 
 3. **Sandboxed Scripting**
-   User scripts (or official feature packages) compile to native code,
-   but run in a restricted sandbox with explicit read/write permissions.
-   This allows high performance while preserving safety and concurrency
-   guarantees.
+   User scripts (or official feature packages) compile to native code but execute
+   in a restricted sandbox with explicit permission settings. This achieves
+   high performance while maintaining safety and concurrency guarantees.
 
 4. **Cloud & Network**
-   While not strictly part of the “engine,” the cloud services (for
-   version control, content discovery, headless hosting) integrate with
-   local worlds seamlessly. A distributed or client-server model is
-   possible, as each world runs in a separate “engine instance.”
+   Although not strictly part of the “engine,” cloud services (for version control,
+   content discovery, headless hosting) integrate seamlessly with local worlds.
+   Each world instance can run in a distributed or client-server model, as every
+   instance is its own engine process.
 
 High-Level Architecture Diagram
 -------------------------------
@@ -68,74 +71,72 @@ High-Level Architecture Diagram
        ENGINE --> WORLD
        DRIVERS --> WORLD
 
-In short:
+In summary:
 
-- **SyncraRuntime** spawns and monitors processes.
-- **Drivers** handle specialized tasks (rendering, audio, VR, input).
-- **Engine** runs the ECS-based “world” logic.
-- A **dataflow** system orchestrates how data moves between
-  drivers, the engine, and the runtime.
+- **SyncraRuntime** spawns and manages processes.
+- **Drivers** handle specialized tasks (rendering, audio, VR, input, etc.).
+- **Engine** executes ECS-based “world” logic.
+- The **dataflow** system orchestrates how data moves among the runtime, drivers,
+  and engine.
 
 Explore Each Layer
 ------------------
 
-For a deeper look at each subsystem, see:
+For more detailed information on each subsystem, see:
 
 - :doc:`runtime`
-  Explains how SyncraRuntime spawns, restarts, and manages drivers/worlds,
-  ensuring robust crash isolation and secure IPC.
+  Describes how SyncraRuntime launches, restarts, and manages drivers/worlds,
+  including crash isolation and secure inter-process communication (IPC).
 
 - :doc:`drivers`
-  Covers the core concept of driver “subprocesses,” with examples like the
+  Explains how driver “subprocesses” operate, featuring examples such as the
   renderer, audio, OpenXR, and input drivers.
 
 - :doc:`engine_ecs`
-  Delve into the ECS design: how we handle concurrency, system scheduling,
-  permissions, and the logic behind world simulation.
+  Focuses on the ECS design: concurrency, system scheduling, permissions, and
+  the logic behind world simulation.
 
 - :doc:`scripting`
-  Learn how scripts compile to native code, how sandboxing is enforced,
-  and how functional or visual scripting layers integrate with ECS.
+  Outlines how scripts compile to native code, how sandboxing is enforced, and
+  how scripting (functional or visual) works with the ECS.
 
 - :doc:`dataflow`
-  See how driver inputs and outputs form a dataflow graph, plus how
-  transformations are scheduled and how users can customize these graphs
-  for complex workflows (e.g., advanced audio pipelines or layered
-  rendering passes).
+  Examines how driver inputs and outputs form a dataflow graph, and how these
+  transformations are scheduled and customized for tasks such as advanced audio
+  pipelines or layered rendering passes.
 
 Architectural Benefits
 ----------------------
 
-- **Parallelism & Performance**: The ECS can schedule safe concurrency
-  across many CPU cores; drivers can run independently or with parallel
-  data transformations.
+- **Parallelism & Performance**
+  The ECS schedules safe concurrency across multiple CPU cores, and drivers can
+  run independently or utilize parallel data transformations.
 
-- **User Modifiability**: Scripting + the driver approach let you extend
-  or replace key subsystems, from physics to rendering pipelines, without
-  monolithic engine code changes.
+- **User Modifiability**
+  By combining scripting with a driver approach, it is possible to extend or
+  replace core subsystems—such as physics or rendering pipelines—without
+  needing to modify a single monolithic codebase.
 
-- **Security**: Process boundaries act like microservices for VR. If
-  a malicious script or untested driver misbehaves, it can’t trivially
-  compromise the entire system.
+- **Security**
+  Each driver behaves like a microservice for VR. If a script or driver misbehaves,
+  process boundaries help contain the issue, protecting other parts of the system.
 
-- **Scalability**: Move or replicate drivers onto different machines or
-  cloud instances if performance or distribution demands it (a future
-  feature planned for advanced usage).
+- **Scalability**
+  Additional performance or distribution needs can be met by migrating drivers
+  to different machines or cloud instances (a planned feature for advanced usage).
 
 Next Steps
 ----------
 
-This overview should give you a sense of why SyncraEngine’s architecture
-differs from traditional single-process engines. If you want more detail:
+This overview highlights why SyncraEngine’s architecture differs from many
+single-process game engines. For further details:
 
-- Head to :doc:`runtime` for the lifecycle of each driver and engine
-  process.
-- Read :doc:`engine_ecs` to see how concurrency and permissions are
-  guaranteed in the ECS design.
-- Check out :doc:`scripting` for how user-defined logic compiles and
-  executes safely.
+- Review :doc:`runtime` to learn about the lifecycle of drivers and engine
+  processes.
+- Read :doc:`engine_ecs` for insights into concurrency and permissions in
+  the ECS design.
+- Check :doc:`scripting` for details on safe, high-performance script execution.
 
-Questions or feedback on the architecture? Join the
-`Discord server <https://discord.gg/yxMagwQx9A>`_ or open a discussion on
-GitHub to share your thoughts!
-
+For questions or feedback about the architecture, visit the
+`Discord server <https://discord.gg/yxMagwQx9A>`_ or open a discussion
+on GitHub. Feedback is always welcome.
