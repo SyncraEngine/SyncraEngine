@@ -5,7 +5,7 @@ About SyncraEngine
 What is SyncraEngine?
 ---------------------
 
-SyncraEngine is a next-generation social VR platform *and* a modular game engine
+SyncraEngine is a next-generation social VR platform build around a custom modular game engine
 designed for collaborative content creation and maximum extensibility. While it
 can be used for typical "game-like" experiences, it focuses on providing a
 secure, efficient, sandboxed environment for real-time VR worlds. The architecture
@@ -51,7 +51,7 @@ to an agile methodology once the core architecture was set.
 Despite being only a few months old, the project has advanced rapidly, propelled
 by a strong theoretical foundation and an emphasis on testing real use cases
 quickly. Much of the **core engineering** work (runtime, driver model, ECS, and
-concurrency) is underway, and the **testing** phase is starting soon.
+concurrency) is finished, and the **testing** phase will be starting soon.
 
 Development Timeline & Current Status
 -------------------------------------

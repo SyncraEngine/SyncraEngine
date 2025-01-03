@@ -1,12 +1,13 @@
 .. SyncraEngine documentation master file, created by
    sphinx-quickstart on Thu Jan  2 22:51:53 2025.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+   This file can be fully customized, but it should at least
+   include the root `toctree` directive.
 
 SyncraEngine Documentation
 ==========================
 
-Welcome to the SyncraEngine documentation page. Below you’ll find an overview of the major sections:
+Welcome to the SyncraEngine documentation. Below are the main sections covering
+architecture, setup, features, and more:
 
 .. toctree::
    :maxdepth: 2

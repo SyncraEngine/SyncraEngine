@@ -121,7 +121,7 @@ Creating a New Driver
 
 Suppose you need a driver for *holographic displays*. You would:
 
-1. **Develop a Rust (or C++) application** that integrates with specialized
+1. **Develop a Rust (or C++/etc) application** that integrates with specialized
    hardware or libraries.
 2. **Implement the SyncraEngine driver interface**—essentially an IPC protocol
    for sharing what data streams you produce or consume.

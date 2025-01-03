@@ -1,7 +1,7 @@
 Architecture Overview
 =====================
 
-Below is an overview of SyncraEngine's core architecture components:
+This section covers the key architectural components in SyncraEngine:
 
 .. toctree::
    :maxdepth: 2

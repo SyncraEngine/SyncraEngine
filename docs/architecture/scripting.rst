@@ -16,8 +16,8 @@ Why a Dedicated Scripting System?
   Allows creators to add or adjust features without rebuilding the entire engine.
 
 - **Performance**
-  Compiling scripts to native code avoids garbage collection or purely interpreted
-  overhead (no JIT).
+  Compiling scripts to native code avoids heavy garbage collection algorithms
+  or interpreted/JIT overhead.
 
 - **Security**
   The scripting environment is sandboxed, preventing direct OS API calls or

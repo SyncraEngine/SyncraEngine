@@ -1,7 +1,8 @@
 Features
 ========
 
-Explore SyncraEngine's major features:
+This section highlights SyncraEngine's primary feature areas. Select a topic
+below to learn more:
 
 .. toctree::
    :maxdepth: 2

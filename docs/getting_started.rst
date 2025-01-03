@@ -14,11 +14,7 @@ Alpha Access
 ------------
 
 1. **Request an Alpha Key**
-   Prospective testers can obtain a key via the
-   `developer application form <https://docs.google.com/forms/d/e/1FAIpQLSc0gTEckujjUgszlFeN69_viyBRWrHARQNbsEX4mYmDuIn13A/viewform?usp=header>`_
-   or the
-   `auditing application form <https://docs.google.com/forms/d/e/1FAIpQLSfCcFhZwCO7ZZrI1Vkcy_BeIAvEhZcTiMjoQhZK5ewXZSpyww/viewform?usp=header>`_
-   (for those reviewing source). Keys are distributed manually for now.
+   Prospective testers can obtain a key via a Discord bot in the `Discord server <https://discord.gg/yxMagwQx9A>`_ (TBA).
 
 2. **Join the Discord**
    Access the `Discord server <https://discord.gg/yxMagwQx9A>`_ for updates, alpha
