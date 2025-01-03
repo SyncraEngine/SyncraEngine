@@ -3,15 +3,21 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-SyncraEngine documentation
+SyncraEngine Documentation
 ==========================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
-
+Welcome to the SyncraEngine documentation page. Below you’ll find an overview of the major sections:
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   about
+   getting_started
+   architecture/index
+   roadmap
+   features/index
+   faq
+   devlog_changelog
+   contributing
+   references
