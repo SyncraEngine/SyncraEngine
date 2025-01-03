@@ -14,10 +14,8 @@ Welcome to the SyncraEngine documentation page. Below you’ll find an overview 
 
    about
    getting_started
-   architecture/index
    roadmap
-   features/index
    faq
-   devlog_changelog
    contributing
-   references
+   architecture/index
+   features/index
