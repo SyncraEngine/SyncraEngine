@@ -2,9 +2,7 @@
 
 A social VR platform and engine focused on collaborative content creation.
 
-Check out the [SyncraEngine Discord server](https://discord.gg/yxMagwQx9A) to learn more.
-
-Read the [documentation](https://docs.syncraengine.net/) here.
+Check out the [official documentation](https://docs.syncraengine.net/) to learn more. Join the [Discord server](https://discord.gg/yxMagwQx9A) to receive updates about the project and get access to early previews.
 
 This public repository hosts Issues, Projects, Docs, and Pages for SyncraEngine.
 
