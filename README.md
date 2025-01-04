@@ -58,8 +58,8 @@ As the project is still in alpha, releases/benchmarks/examples will be made avai
 
 ## How can I help?
 
-SyncraEngine is early in its development, and your feedback or ideas are welcome! Join the [Discord server](https://discord.gg/yxMagwQx9A) to share suggestions, ask questions, or learn more about the project.
+SyncraEngine is early in its development, and your feedback or ideas are welcome! Join the [Discord server](https://discord.gg/yxMagwQx9A) to share suggestions, ask questions, or learn more about the project. If you have experience with these areas and would like to contribute to the source code, you can fill out the [Developer Application](https://docs.google.com/forms/d/e/1FAIpQLSc0gTEckujjUgszlFeN69_viyBRWrHARQNbsEX4mYmDuIn13A/viewform?usp=header).
 
 ## Where is the source code?
 
-The project has been moved over to a private repo, but source code may be provided upon request.
+The source code is not publicly available for security and confidentiality reasons, but if you're interested in auditing the codebase, you can fill out the [Source Auditing Application](https://docs.google.com/forms/d/e/1FAIpQLSfCcFhZwCO7ZZrI1Vkcy_BeIAvEhZcTiMjoQhZK5ewXZSpyww/viewform?usp=header).
