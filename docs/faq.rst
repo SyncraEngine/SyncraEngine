@@ -16,7 +16,7 @@ concurrency, dataflow drivers, and a data-oriented ECS. While it has similaritie
 to game engines, its focus is on a flexible social VR platform—powered by many
 engine-like features.
 
-**Long answer**: Constructing a full engine may sound involved, but the scope
+**Long answer**: Developing a game engine is usually an involved process, but the scope
 remains manageable thanks to:
 
 - **Modular Design**: Each subsystem (rendering, audio, VR, etc.) is handled by

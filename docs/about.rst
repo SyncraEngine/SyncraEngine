@@ -9,7 +9,7 @@ SyncraEngine is a next-generation social VR platform build around a custom modul
 designed for collaborative content creation and maximum extensibility. While it
 can be used for typical "game-like" experiences, it focuses on providing a
 secure, efficient, sandboxed environment for real-time VR worlds. The architecture
-also makes it suitable for non-VR or mixed workloads if desired.
+also makes it suitable for non-VR or mixed use cases.
 
 Key Objectives
 --------------
@@ -42,27 +42,27 @@ Key Objectives
 Project Background
 ------------------
 
-SyncraEngine began as a conceptual project aimed at creating a more "open-ended"
-social VR platform—one that goes beyond traditional "monolithic" engines and
-embraces a **multi-process**, dataflow-based design. Early development followed
-a waterfall-style approach to establish the foundational concepts, then pivoted
+SyncraEngine began as an experiment aimed at creating a more open-ended
+social VR platform—one that goes beyond traditional monolithic engines and
+embraces a multi-process, dataflow-based design. Early development followed
+a waterfall-style approach to establish the foundational concepts and then pivoted
 to an agile methodology once the core architecture was set.
 
 Despite being only a few months old, the project has advanced rapidly, propelled
 by a strong theoretical foundation and an emphasis on testing real use cases
-quickly. Much of the **core engineering** work (runtime, driver model, ECS, and
+quickly. Much of the core engineering work (runtime, driver model, ECS, and
 concurrency) is finished, and the **testing** phase will be starting soon.
 
 Development Timeline & Current Status
 -------------------------------------
 
-- **Early Concept & Design** (first few weeks):
-  - Explored concurrency, dataflow, and ECS architecture
+- **Early Concept & Design** (first few months):
+  - Explored topics in concurrency, dataflow, and ECS architecture
   - Established security and performance goals
-- **Implementation** (subsequent weeks):
-  - Began coding the runtime, drivers, engine ECS, and scripting
+- **Implementation** (ongoing):
+  - Begin coding the runtime, drivers, engine ECS, and scripting
   - Alpha builds on track for internal testing
-- **Alpha Testing** (ongoing):
+- **Alpha Testing**:
   - Involves a small group of early adopters
   - Rapid iteration, with preview builds of scripting, engine, and more
 - **Beta Release**:
@@ -75,12 +75,12 @@ Development Timeline & Current Status
 Why Another Social VR Platform?
 -------------------------------
 
-Many existing VR engines rely on **monolithic** or **single-process** solutions,
+Many existing VR engines rely on monolithic or single-process solutions,
 limiting extensibility and risking single points of failure. They often rely on
 object-oriented or single-threaded paradigms that are not ideal for modern
 multicore systems or secure sandboxing.
 
-SyncraEngine’s architecture is purposefully **modular** and **process-isolated**.
+SyncraEngine’s architecture is purposefully modular and process-isolated.
 This design:
 
 - Protects the main runtime from driver or script crashes
